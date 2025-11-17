@@ -98,3 +98,24 @@ func (q *Query[T]) MustFirst(ctx context.Context) T {
 	}
 	return dest
 }
+
+// Join adds an INNER JOIN using GORM's Joins().
+func (q *Query[T]) Join(joinExpr string, args ...any) *Query[T] {
+	// Example: "JOIN items ON items.id = orders.item_id"
+	q.db = q.db.Joins(joinExpr, args...)
+	return q
+}
+
+// LeftJoin adds a LEFT JOIN.
+func (q *Query[T]) LeftJoin(joinExpr string, args ...any) *Query[T] {
+	// GORM expects the whole JOIN clause string.
+	// You can inline "LEFT JOIN ..." here for convenience.
+	q.db = q.db.Joins(joinExpr, args...)
+	return q
+}
+
+// RightJoin (if you really need it).
+func (q *Query[T]) RightJoin(joinExpr string, args ...any) *Query[T] {
+	q.db = q.db.Joins(joinExpr, args...)
+	return q
+}

@@ -203,7 +203,6 @@ func (q *Query[T]) First(ctx context.Context) (T, error) {
 }
 
 // FirstOrZero returns zero value of T if no record is found.
-// In Laravel terms, like first() but instead of null you get a zero-value struct.
 func (q *Query[T]) FirstOrZero(ctx context.Context) (T, error) {
 	var dest T
 	err := q.db.WithContext(ctx).First(&dest).Error
@@ -215,7 +214,6 @@ func (q *Query[T]) FirstOrZero(ctx context.Context) (T, error) {
 }
 
 // MustFirst is a convenience: panic on any error.
-// Handy in scripts / tests where you want short code.
 func (q *Query[T]) MustFirst(ctx context.Context) T {
 	var dest T
 	if err := q.db.WithContext(ctx).First(&dest).Error; err != nil {
@@ -239,16 +237,11 @@ func (q *Query[T]) Count(ctx context.Context) (int64, error) {
 //
 // Laravel: ->exists()
 func (q *Query[T]) Exists(ctx context.Context) (bool, error) {
-	// Efficient pattern: SELECT 1 LIMIT 1
-	var dest T
-	err := q.db.WithContext(ctx).Limit(1).Find(&dest).Error
-	if err == gorm.ErrRecordNotFound {
-		return false, nil
-	}
-	if err != nil {
+	var c int64
+	if err := q.db.WithContext(ctx).Limit(1).Count(&c).Error; err != nil {
 		return false, err
 	}
-	return true, nil
+	return c > 0, nil
 }
 
 //
@@ -291,6 +284,5 @@ func (q *Query[T]) UpdateColumns(ctx context.Context, values map[string]any) err
 //
 // Laravel: ->delete()
 func (q *Query[T]) Delete(ctx context.Context) error {
-	// GORM uses table set by Table(...), model type is new(T).
 	return q.db.WithContext(ctx).Delete(new(T)).Error
 }

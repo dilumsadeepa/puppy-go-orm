@@ -262,6 +262,13 @@ func (q *Query[T]) Pluck(ctx context.Context, column string, dest any) error {
 	return q.db.WithContext(ctx).Pluck(column, dest).Error
 }
 
+// Preload adds a GORM preload for relations.
+// Example: Preload("Reservations.DeliveryArea.City")
+func (q *Query[T]) Preload(query string, args ...any) *Query[T] {
+	q.db = q.db.Preload(query, args...)
+	return q
+}
+
 //
 // ---------- Write helpers (optional, Eloquent-ish) ----------
 //

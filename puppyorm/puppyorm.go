@@ -293,3 +293,79 @@ func (q *Query[T]) UpdateColumns(ctx context.Context, values map[string]any) err
 func (q *Query[T]) Delete(ctx context.Context) error {
 	return q.db.WithContext(ctx).Delete(new(T)).Error
 }
+
+//
+// ---------- Aggregation helpers (sum, avg, min, max) ----------
+//
+
+// Sum returns SUM(column) as float64.
+// Laravel: ->sum('amount')
+func (q *Query[T]) Sum(ctx context.Context, column string) (float64, error) {
+	type aggResult struct {
+		Total float64 `gorm:"column:total"`
+	}
+	var res aggResult
+
+	err := q.db.WithContext(ctx).
+		Select("COALESCE(SUM(" + column + "), 0) AS total").
+		Scan(&res).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return res.Total, nil
+}
+
+// Avg returns AVG(column) as float64.
+// Laravel: ->avg('amount')
+func (q *Query[T]) Avg(ctx context.Context, column string) (float64, error) {
+	type aggResult struct {
+		Total float64 `gorm:"column:total"`
+	}
+	var res aggResult
+
+	err := q.db.WithContext(ctx).
+		Select("AVG(" + column + ") AS total").
+		Scan(&res).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return res.Total, nil
+}
+
+// Min returns MIN(column) as float64.
+// Laravel: ->min('amount')
+func (q *Query[T]) Min(ctx context.Context, column string) (float64, error) {
+	type aggResult struct {
+		Total float64 `gorm:"column:total"`
+	}
+	var res aggResult
+
+	err := q.db.WithContext(ctx).
+		Select("MIN(" + column + ") AS total").
+		Scan(&res).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return res.Total, nil
+}
+
+// Max returns MAX(column) as float64.
+// Laravel: ->max('amount')
+func (q *Query[T]) Max(ctx context.Context, column string) (float64, error) {
+	type aggResult struct {
+		Total float64 `gorm:"column:total"`
+	}
+	var res aggResult
+
+	err := q.db.WithContext(ctx).
+		Select("MAX(" + column + ") AS total").
+		Scan(&res).Error
+
+	if err != nil {
+		return 0, err
+	}
+	return res.Total, nil
+}
